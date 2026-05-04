@@ -1,0 +1,14 @@
+# Normalize all text files to LF in the repo.
+* text=auto eol=lf
+
+# Explicitly mark binary files.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.jks binary
+*.keystore binary
+*.p8 binary
+*.p12 binary
+*.mobileprovision binary

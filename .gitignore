@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Expo
+.expo/
+.expo-shared/
+dist/
+web-build/
+
+# Native build output (if ever ejected)
+ios/
+android/
+
+# Environment variables
+.env
+.env.local
+.env*.local
+
+# Logs
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+*.log
+
+# Certificates & signing
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.keystore
+
+# macOS
+.DS_Store
+
+# Merge artifacts
+*.orig.*
+
+# TypeScript build cache
+*.tsbuildinfo
