@@ -34,7 +34,6 @@ export default function TripControls({
         disabled={disabled}
         activeOpacity={0.82}
       >
-        {/* Icon — play triangle or stop square */}
         <View style={styles.iconSlot}>
           {isTracking ? (
             <View style={styles.stopIcon} />
@@ -42,7 +41,6 @@ export default function TripControls({
             <View style={styles.playIcon} />
           )}
         </View>
-
         <Text style={[styles.label, disabled && styles.disabledLabel]}>
           {label}
         </Text>
@@ -63,29 +61,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     borderRadius: 50,
     gap: 10,
-    // Elevated shadow for floating-over-map feel.
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.45,
     shadowRadius: 10,
     elevation: 10,
   },
-  startButton: {
-    backgroundColor: '#007AFF',
-  },
-  stopButton: {
-    backgroundColor: '#FF3B30',
-  },
-  disabledButton: {
-    backgroundColor: '#2C2C2E',
-  },
+  startButton: { backgroundColor: '#007AFF' },
+  stopButton: { backgroundColor: '#FF3B30' },
+  disabledButton: { backgroundColor: '#2C2C2E' },
   iconSlot: {
     width: 18,
     height: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // Right-pointing triangle via zero-size borders.
   playIcon: {
     width: 0,
     height: 0,
@@ -95,7 +85,7 @@ const styles = StyleSheet.create({
     borderTopColor: 'transparent',
     borderBottomColor: 'transparent',
     borderLeftColor: '#fff',
-    marginLeft: 2, // optical centering — triangles read left-heavy
+    marginLeft: 2,
   },
   stopIcon: {
     width: 14,
@@ -109,7 +99,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: -0.3,
   },
-  disabledLabel: {
-    color: '#636366',
-  },
+  disabledLabel: { color: '#636366' },
 });

@@ -2,6 +2,7 @@
   "expo": {
     "name": "Trip Tracker",
     "slug": "trip-tracker",
+    "scheme": "triptracker",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -17,7 +18,9 @@
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Trip Tracker uses your location to record your route while driving.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Trip Tracker uses your location to track trips, including when running in the background.",
-        "UIBackgroundModes": ["location"]
+        "UIBackgroundModes": [
+          "location"
+        ]
       }
     },
     "android": {
@@ -36,7 +39,9 @@
           "locationWhenInUsePermission": "Trip Tracker uses your location to record your route while driving.",
           "locationAlwaysAndWhenInUsePermission": "Trip Tracker uses your location to track trips, including when running in the background."
         }
-      ]
+      ],
+      "expo-router",
+      "expo-sqlite"
     ]
   }
 }

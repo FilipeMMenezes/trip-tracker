@@ -1,23 +1,10 @@
 import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
+import { formatDuration } from '../utils/tripUtils';
 
 interface Props {
-  speed: number; // mph
+  speed: number;
   elapsedSeconds: number;
-}
-
-function formatElapsed(seconds: number): string {
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = seconds % 60;
-  if (h > 0) {
-    return `${h}:${pad(m)}:${pad(s)}`;
-  }
-  return `${m}:${pad(s)}`;
-}
-
-function pad(n: number): string {
-  return n.toString().padStart(2, '0');
 }
 
 export default function TripHUD({ speed, elapsedSeconds }: Props) {
@@ -26,7 +13,7 @@ export default function TripHUD({ speed, elapsedSeconds }: Props) {
       <View style={styles.card}>
         <Metric value={Math.round(speed).toString()} unit="mph" />
         <View style={styles.separator} />
-        <Metric value={formatElapsed(elapsedSeconds)} unit="elapsed" />
+        <Metric value={formatDuration(elapsedSeconds)} unit="elapsed" />
       </View>
     </View>
   );
@@ -70,7 +57,6 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontWeight: '700',
     letterSpacing: -0.5,
-    // Tabular nums prevent the display from shifting width as digits change.
     fontVariant: ['tabular-nums'],
   },
   unit: {

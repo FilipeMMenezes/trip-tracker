@@ -15,7 +15,6 @@ interface Props {
   isTracking: boolean;
 }
 
-// Default region shown before the first GPS fix — centered on the US.
 const INITIAL_REGION: Region = {
   latitude: 37.0902,
   longitude: -95.7129,
@@ -26,7 +25,7 @@ const INITIAL_REGION: Region = {
 export default function TripMap({ currentLocation, coordinates, isTracking }: Props) {
   const mapRef = useRef<MapView>(null);
 
-  // Keep the map centered on the user's position while a trip is active.
+  // Track the user live during an active trip.
   useEffect(() => {
     if (isTracking && currentLocation && mapRef.current) {
       mapRef.current.animateToRegion(
@@ -41,7 +40,7 @@ export default function TripMap({ currentLocation, coordinates, isTracking }: Pr
     }
   }, [currentLocation, isTracking]);
 
-  // Zoom to the user's location on the first GPS fix (before a trip starts).
+  // Zoom to current position on first GPS fix (idle state).
   useEffect(() => {
     if (!isTracking && currentLocation && mapRef.current) {
       mapRef.current.animateToRegion(
@@ -56,19 +55,27 @@ export default function TripMap({ currentLocation, coordinates, isTracking }: Pr
     }
   }, [currentLocation?.coords.latitude, currentLocation?.coords.longitude]);
 
+  // Fit to all coordinates when viewing a saved trip (no current location).
+  useEffect(() => {
+    if (!isTracking && !currentLocation && coordinates.length > 1 && mapRef.current) {
+      mapRef.current.fitToCoordinates(coordinates, {
+        edgePadding: { top: 40, right: 40, bottom: 40, left: 40 },
+        animated: true,
+      });
+    }
+  }, []);
+
   return (
     <MapView
       ref={mapRef}
       style={StyleSheet.absoluteFillObject}
-      // PROVIDER_DEFAULT uses MapKit on iOS — no API key required.
       provider={PROVIDER_DEFAULT}
       initialRegion={INITIAL_REGION}
-      showsUserLocation={false} // We draw a custom marker to reflect trip state.
+      showsUserLocation={false}
       showsCompass={true}
       showsScale={true}
       userInterfaceStyle="dark"
     >
-      {/* Blue polyline tracing the recorded route. */}
       {coordinates.length > 1 && (
         <Polyline
           coordinates={coordinates}
@@ -79,7 +86,6 @@ export default function TripMap({ currentLocation, coordinates, isTracking }: Pr
         />
       )}
 
-      {/* Custom location dot — turns red while a trip is recording. */}
       {currentLocation && (
         <Marker
           coordinate={{
@@ -97,7 +103,6 @@ export default function TripMap({ currentLocation, coordinates, isTracking }: Pr
 }
 
 function LocationDot({ isTracking }: { isTracking: boolean }) {
-  // Blue at rest, red while recording.
   const accent = isTracking ? '#FF3B30' : '#007AFF';
   return (
     <View

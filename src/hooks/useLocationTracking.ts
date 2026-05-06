@@ -2,21 +2,23 @@ import { useEffect, useRef, useState } from 'react';
 import * as Location from 'expo-location';
 import { Coordinate } from '../types/trip';
 
+interface Options {
+  isTracking: boolean;
+  onUpdate: (coord: Coordinate, speedMph: number) => void;
+}
+
 interface LocationTracking {
-  coordinates: Coordinate[];
   currentLocation: Location.LocationObject | null;
-  currentSpeed: number; // mph
   hasPermission: boolean;
 }
 
-export function useLocationTracking(isTracking: boolean): LocationTracking {
-  const [coordinates, setCoordinates] = useState<Coordinate[]>([]);
+export function useLocationTracking({ isTracking, onUpdate }: Options): LocationTracking {
   const [currentLocation, setCurrentLocation] = useState<Location.LocationObject | null>(null);
-  const [currentSpeed, setCurrentSpeed] = useState(0);
   const [hasPermission, setHasPermission] = useState(false);
   const subscriptionRef = useRef<Location.LocationSubscription | null>(null);
+  const onUpdateRef = useRef(onUpdate);
+  onUpdateRef.current = onUpdate;
 
-  // Ask for foreground location permission once on mount.
   useEffect(() => {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -24,16 +26,12 @@ export function useLocationTracking(isTracking: boolean): LocationTracking {
     })();
   }, []);
 
-  // Start/stop the GPS subscription whenever the tracking flag or permission changes.
   useEffect(() => {
     if (isTracking && hasPermission) {
-      setCoordinates([]);
-      setCurrentSpeed(0);
       startTracking();
     } else {
       stopTracking();
     }
-
     return () => stopTracking();
   }, [isTracking, hasPermission]);
 
@@ -41,21 +39,17 @@ export function useLocationTracking(isTracking: boolean): LocationTracking {
     subscriptionRef.current = await Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.BestForNavigation,
-        timeInterval: 1000,   // at most one update per second
-        distanceInterval: 3,  // or every 3 meters, whichever comes first
+        timeInterval: 1000,
+        distanceInterval: 3,
       },
       (location) => {
+        setCurrentLocation(location);
         const coord: Coordinate = {
           latitude: location.coords.latitude,
           longitude: location.coords.longitude,
         };
-
-        setCurrentLocation(location);
-        setCoordinates((prev) => [...prev, coord]);
-
-        // expo-location reports speed in m/s (null when unavailable).
         const rawSpeed = location.coords.speed ?? 0;
-        setCurrentSpeed(Math.max(0, rawSpeed) * 2.237); // m/s → mph
+        onUpdateRef.current(coord, Math.max(0, rawSpeed) * 2.237);
       }
     );
   }
@@ -65,8 +59,7 @@ export function useLocationTracking(isTracking: boolean): LocationTracking {
       subscriptionRef.current.remove();
       subscriptionRef.current = null;
     }
-    setCurrentSpeed(0);
   }
 
-  return { coordinates, currentLocation, currentSpeed, hasPermission };
+  return { currentLocation, hasPermission };
 }
