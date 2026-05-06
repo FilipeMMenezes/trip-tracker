@@ -12,4 +12,7 @@ export interface Trip {
   maxSpeedMph: number;
   avgSpeedMph: number;
   coordinates: Coordinate[];
+  routineId?: string;
+  destinationLat?: number;
+  destinationLng?: number;
 }

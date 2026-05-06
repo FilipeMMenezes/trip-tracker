@@ -19,7 +19,9 @@
         "NSLocationWhenInUseUsageDescription": "Trip Tracker uses your location to record your route while driving.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Trip Tracker uses your location to track trips, including when running in the background.",
         "UIBackgroundModes": [
-          "location"
+          "location",
+          "fetch",
+          "remote-notification"
         ]
       }
     },
@@ -41,7 +43,15 @@
         }
       ],
       "expo-router",
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#007AFF",
+          "sounds": []
+        }
+      ]
     ]
   }
 }

@@ -1,5 +1,21 @@
 import { Tabs } from 'expo-router';
 import { StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+
+type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
+
+interface TabConfig {
+  name: string;
+  title: string;
+  icon: IoniconsName;
+  iconActive: IoniconsName;
+}
+
+const TABS: TabConfig[] = [
+  { name: 'index', title: 'Track', icon: 'navigate-outline', iconActive: 'navigate' },
+  { name: 'history', title: 'History', icon: 'time-outline', iconActive: 'time' },
+  { name: 'routines', title: 'Routines', icon: 'map-outline', iconActive: 'map' },
+];
 
 export default function TabsLayout() {
   return (
@@ -12,8 +28,22 @@ export default function TabsLayout() {
         tabBarLabelStyle: styles.tabLabel,
       }}
     >
-      <Tabs.Screen name="index" options={{ title: 'Track' }} />
-      <Tabs.Screen name="history" options={{ title: 'History' }} />
+      {TABS.map((tab) => (
+        <Tabs.Screen
+          key={tab.name}
+          name={tab.name}
+          options={{
+            title: tab.title,
+            tabBarIcon: ({ color, focused }) => (
+              <Ionicons
+                name={focused ? tab.iconActive : tab.icon}
+                size={22}
+                color={color}
+              />
+            ),
+          }}
+        />
+      ))}
     </Tabs>
   );
 }

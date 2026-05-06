@@ -9,7 +9,6 @@ import TripSummaryModal from '../../src/components/TripSummaryModal';
 import { useLocationTracking } from '../../src/hooks/useLocationTracking';
 import { useTripTimer } from '../../src/hooks/useTripTimer';
 import { useTripStore } from '../../src/store/tripStore';
-import { saveTrip } from '../../src/db/tripRepository';
 import { totalDistanceMiles } from '../../src/utils/tripUtils';
 import { Trip, Coordinate } from '../../src/types/trip';
 
@@ -61,12 +60,8 @@ export default function TrackScreen() {
     setPendingTrip(trip);
   };
 
-  const handleSave = async () => {
-    if (pendingTrip) {
-      await saveTrip(pendingTrip);
-      setPendingTrip(null);
-    }
-  };
+  // The modal owns the actual save (routine matching + DB write)
+  const handleSave = () => setPendingTrip(null);
 
   const handleDiscard = () => setPendingTrip(null);
 

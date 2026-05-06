@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Modal,
   View,
@@ -6,9 +6,17 @@ import {
   StyleSheet,
   TouchableOpacity,
   SafeAreaView,
+  ActivityIndicator,
 } from 'react-native';
 import { Trip } from '../types/trip';
+import { Routine } from '../types/routine';
 import { formatDuration, formatDate, formatTime } from '../utils/tripUtils';
+import { saveTrip } from '../db/tripRepository';
+import { getAllRoutines } from '../db/routineRepository';
+import { getTripsForRoutine } from '../db/tripRepository';
+import { matchTripToRoutine } from '../utils/routineMatching';
+import { analyzeRoutine } from '../utils/trafficAnalysis';
+import { scheduleDepartureReminder } from '../utils/notifications';
 
 interface Props {
   trip: Trip | null;
@@ -17,7 +25,51 @@ interface Props {
 }
 
 export default function TripSummaryModal({ trip, onSave, onDiscard }: Props) {
+  const [routines, setRoutines] = useState<Routine[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (trip) {
+      getAllRoutines().then(setRoutines);
+    }
+  }, [trip]);
+
   if (!trip) return null;
+
+  const handleSave = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
+
+    try {
+      const matchedRoutine = matchTripToRoutine(trip.coordinates, routines);
+      const lastCoord = trip.coordinates[trip.coordinates.length - 1];
+
+      const enrichedTrip: Trip = {
+        ...trip,
+        ...(matchedRoutine && lastCoord
+          ? {
+              routineId: matchedRoutine.id,
+              destinationLat: lastCoord.latitude,
+              destinationLng: lastCoord.longitude,
+            }
+          : {}),
+      };
+
+      await saveTrip(enrichedTrip);
+
+      // Recompute and reschedule notification if a routine was matched
+      if (matchedRoutine) {
+        const routineTrips = await getTripsForRoutine(matchedRoutine.id);
+        const recommendation = analyzeRoutine(matchedRoutine, routineTrips);
+        if (recommendation.unlocked) {
+          await scheduleDepartureReminder(matchedRoutine, recommendation);
+        }
+      }
+    } finally {
+      setIsSaving(false);
+      onSave();
+    }
+  };
 
   return (
     <Modal visible animationType="slide" presentationStyle="pageSheet">
@@ -35,10 +87,24 @@ export default function TripSummaryModal({ trip, onSave, onDiscard }: Props) {
         </View>
 
         <View style={styles.actions}>
-          <TouchableOpacity style={styles.saveButton} onPress={onSave} activeOpacity={0.8}>
-            <Text style={styles.saveLabel}>Save Trip</Text>
+          <TouchableOpacity
+            style={[styles.saveButton, isSaving && styles.savingButton]}
+            onPress={handleSave}
+            activeOpacity={0.8}
+            disabled={isSaving}
+          >
+            {isSaving ? (
+              <ActivityIndicator color="#FFF" />
+            ) : (
+              <Text style={styles.saveLabel}>Save Trip</Text>
+            )}
           </TouchableOpacity>
-          <TouchableOpacity style={styles.discardButton} onPress={onDiscard} activeOpacity={0.8}>
+          <TouchableOpacity
+            style={styles.discardButton}
+            onPress={onDiscard}
+            activeOpacity={0.8}
+            disabled={isSaving}
+          >
             <Text style={styles.discardLabel}>Discard</Text>
           </TouchableOpacity>
         </View>
@@ -110,6 +176,9 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
+  },
+  savingButton: {
+    opacity: 0.7,
   },
   saveLabel: {
     color: '#FFF',
